@@ -4,8 +4,10 @@ import com.notes.spring_boot_crash_course.controller.NoteController.NoteResponse
 import com.notes.spring_boot_crash_course.database.models.Note
 import com.notes.spring_boot_crash_course.database.repository.NoteRepository
 import org.bson.types.ObjectId
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -34,8 +36,10 @@ class NoteController (
         val createdAt: Instant,
     )
     // this function will be called when a POST request is made to /notes
-    @PostMapping
-    fun save(body: NoteRequest): NoteResponse {
+    @PostMapping("/notes")
+    fun save(@RequestBody body: NoteRequest): NoteResponse {
+        println("Received request: $body")
+        val ownerId = SecurityContextHolder.getContext().authentication.principal as String
         val note = repository.save(
             Note(
                 id = body.id?.let { ObjectId(it) } ?: ObjectId.get(), // if id is null, generate a new ObjectId
@@ -43,11 +47,10 @@ class NoteController (
                 content = body.content,
                 color = body.color,
                 createdAt = Instant.now(),
-                ownerId = ObjectId(body.ownerId) // convert the ownerId to ObjectId
+                ownerId = ObjectId(ownerId) // convert the ownerId to ObjectId
             )
         )
         return note.toResponse()
-
     }
 // this function will be called when a GET request is made to /notes
 
@@ -60,7 +63,6 @@ class NoteController (
         }
     }
 }
-
 
 private fun Note.toResponse(): NoteController.NoteResponse {
     return NoteResponse(

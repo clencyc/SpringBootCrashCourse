@@ -4,6 +4,7 @@ import com.notes.spring_boot_crash_course.database.models.Note
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.repository.MongoRepository
 
+//
 // object Ids also have a timestamp
 interface NoteRepository: MongoRepository<Note, ObjectId> {
     fun findByOwnerId(owner: ObjectId): List<Note>
